@@ -121,7 +121,7 @@ package GeneticAlgorithmMap;
 	 #########################################################################
 	sub setMap {
 		## Grab the instance and map
-		my($oInstance, %oMap) = @_;
+		my($oSelf, %oMap) = @_;
 		## Store the map
 		$oSelf->{"mMap"} = %oMap;
 		## Return instance

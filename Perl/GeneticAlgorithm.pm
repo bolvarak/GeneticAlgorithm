@@ -221,7 +221,7 @@ package GeneticAlgorithm;
 			## Grab the directions
 			my(@aDirections)                = $oSelf->decode(@aBits);
 			## Decode each genome's chromosome into an array of directions
-			$oGenome->{"iFitness"}          = $oSelf->{"mMap"}->testRoute(@aDirections, $oTemporaryMemory, $oSelf->{"mGeneration"}, 0);
+			$oGenome->{"iFitness"}          = $oSelf->{"mMap"}->testRoute(@aDirections, $oTemporaryMemory);
 			## Update the total fitness score
 			$oSelf->{"mTotalFitnessScore"} += $oGenome->{"iFitness"};
 			## Is this the genome we are looking for
@@ -240,6 +240,12 @@ package GeneticAlgorithm;
 			}
 			## Reset the temporary memory
 			$oTemporaryMemory->resetMemory();
+			## Render the map
+			## $oSelf->{"mMap"}->render();
+			## Clear previous renders
+			$oSelf->{"mMap"}->renderClear();
+			## Render the generation
+			$oSelf->{"mMap"}->renderGeneration($oSelf->{"mGeneration"});
 			## Increment the genomes
 			$iGenome ++;
 		}

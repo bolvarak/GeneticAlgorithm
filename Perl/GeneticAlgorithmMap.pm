@@ -105,7 +105,7 @@ package GeneticAlgorithmMap;
 	}
 	sub render {
 		## Grab the instance and generation
-		my($oSelf, $iGeneration) = @_;
+		my($oSelf) = @_;
 		## Clear the current render
 		$oSelf->renderClear();
 		## Loop through the Y-Axis
@@ -138,8 +138,6 @@ package GeneticAlgorithmMap;
 		}
 		## Start a new row
 		$oSelf->renderStartNewRow();
-		## Render the generation
-		$oSelf->renderGeneration($iGeneration);
 		## Return instance
 		return $oSelf;
 	}
@@ -164,7 +162,7 @@ package GeneticAlgorithmMap;
 	}
 	sub testRoute {
 		## Grab the instance, path and temporary memory
-		my($oSelf, @aDirections, $oMap, $iGeneration, $bRender) = @_;
+		my($oSelf, @aDirections, $oMap) = @_;
 		## Define the positions
 		my($iPositionX) = $oSelf->{"mStartX"};
 		my($iPositionY) = $oSelf->{"mStartY"};
@@ -214,16 +212,6 @@ package GeneticAlgorithmMap;
 		## Assign a fitness score proportional to the organism's distance from the exit
 		my($iDifferenceX) = abs($iPositionX - $oSelf->{"mEndX"});
 		my($iDifferenceY) = abs($iPositionY - $oSelf->{"mEndY"});
-		## Do we need to render
-		if ($bRender) {
-			## Render the map
-			$oSelf->render();
-		}
-		## Do we need to render the generation count
-		if ($iGeneration) {
-			## Render the generation counter
-			$oSelf->renderGeneration();
-		}
 		## Run the algorithm
 		return (1 / ($iDifferenceX + $iDifferenceY + 1));
 	}
@@ -252,7 +240,7 @@ package GeneticAlgorithmMap;
 		## Grab the instance and generation
 		my($oSelf, $iGeneration) = @_;
 		## Print the generation
-		print ("Generation: ", int $iGeneration);
+		print ("Generation: ", $iGeneration);
 		## Return instance
 		return $oSelf;
 	}

@@ -13,21 +13,5 @@ use GeneticAlgorithmMap;
 srand(time);
 ## Grab an instance of the algorithm
 my($oAlgorithm) = new GeneticAlgorithm();
-## Define the map
-my(@aMap)       = (
-	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
- 	1, 0, 1, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 1,
- 	8, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 1,
- 	1, 0, 0, 0, 1, 1, 1, 0, 0, 1, 0, 0, 0, 0, 1,
- 	1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 1, 0, 1,
- 	1, 1, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 1, 0, 1,
- 	1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 1, 0, 1,
- 	1, 0, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 5,
- 	1, 0, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1,
- 	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1
-);
-## Grab an instance of the map
-my($oMap)       = new GeneticAlgorithmMap();
-## Dump the map
-print Dumper($oMap->createMap(@aMap));
-## print Dumper($oAlgorithm);
+## Execute the algorithm
+$oAlgorithm->execute();

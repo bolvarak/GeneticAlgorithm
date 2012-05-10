@@ -3,20 +3,23 @@
 package GeneticAlgorithm;
 	## Use our map package
 	use GeneticAlgorithmMap;
+	use Data::Dumper;
 	## Use strict syntax
 	use strict;
 	## Use warnings
 	use warnings;
 	## Define our constants
 	use constant {
-		CHROMOSOME_LENGTH => 70,    ## The length of each chromosome
+		CHROMOSOME_LENGTH => 140,    ## The length of each chromosome
 		CROSSOVER_RATE    => 0.7,   ## The rate at which genes crossover
-		GENE_LENGTH       => 2,     ## The length of each gene
+		GENE_LENGTH       => 4,     ## The length of each gene
 		MUTATION_RATE     => 0.001, ## The rate of mutation
-		POPULATION_SIZE   => 140    ## The size of each population
+		POPULATION_SIZE   => 280    ## The size of each population
 	};
 	## Instance placeholder
 	my($oInstance);
+	## Define our globals
+	my(@mGenomes);
 	 #########################################################################
 	### Singleton #############################################################
 	 #########################################################################
@@ -46,12 +49,11 @@ package GeneticAlgorithm;
 			mChromosomeLength  => shift || (CHROMOSOME_LENGTH), 
 			mTotalFitnessScore => 0.0, 
 			mGeneLength        => shift || (GENE_LENGTH), 
-			mBusy              => 0, 
-			mGenomes           => undef, 
+			mBusy              => 0,
 			mFittestGenome     => undef, 
 			mBestFitnessScore  => undef,
-			mMap               => undef, 
-			mBrain             => undef, 
+			mMap               => new GeneticAlgorithmMap(), 
+			mBrain             => new GeneticAlgorithmMap(), 
 			mGeneration        => undef
 		};
 		## Set the instance
@@ -67,18 +69,20 @@ package GeneticAlgorithm;
 	sub createPopulation {
 		## Grab the instance
 		my($oSelf) = shift;
-		## Reset any existing populations
-		$oSelf->{"mGenomes"} = [];
+		## Clear the current population
+		@mGenomes = ();
 		## Loop through the population
-		for (my($iGenome) = 0; $iGenome < $oSelf->{"mPopulationSize"}; $iGenome ++) {
+		for (my($iGenome) = 0; $iGenome < int($oSelf->{"mPopulationSize"}); $iGenome ++) {
 			## Encode and add the genome
-			push(@{$oSelf->{"mGenomes"}}, $oSelf->getGenome($oSelf->{"mChromosomeLength"}));
+			push(@mGenomes, $oSelf->getGenome());
 		}
 		## Reset the variables
 		$oSelf->{"mGeneration"}        = 0;
 		$oSelf->{"mFittestGenome"}     = 0;
 		$oSelf->{"mBestFitnessScore"}  = 0;
 		$oSelf->{"mTotalFitnessScore"} = 0;
+		## Return instance
+		return $oSelf;
 	}
 	sub crossover {
 		## Grab the instance, parents and offspring
@@ -117,28 +121,28 @@ package GeneticAlgorithm;
 		## Population incrementor
 		my($iNewOffspring) = 0;
 		## Create a placeholder for the offspring
-		my(@aOffspring, %oMother, %oFather, %oOffspringAlpha, %oOffspringBeta);
+		my(@aOffspring, $oMother, $oFather, $oOffspringAlpha, $oOffspringBeta);
 		## Loop through the offspring
 		while ($iNewOffspring < $oSelf->{"mPopulationSize"}) {
 			## Select two parents
-			%oMother         = $oSelf->naturalSelection();
-			%oFather         = $oSelf->naturalSelection();
+			$oMother         = $oSelf->naturalSelection();
+			$oFather         = $oSelf->naturalSelection();
 			## Placeholders for the offspreing
-			%oOffspringAlpha = $oSelf->getGenome();
-			%oOffspringBeta  = $oSelf->getGenome();
+			$oOffspringAlpha = $oSelf->getGenome();
+			$oOffspringBeta  = $oSelf->getGenome();
 			## Crossover
-			$oSelf->crossover(\$oMother{"aBits"}, \$oFather{"aBits"}, \$oOffspringAlpha{"aBits"}, \$oOffspringBeta{"aBits"});
+			$oSelf->crossover($oMother->{"aBits"}, $oFather->{"aBits"}, $oOffspringAlpha->{"aBits"}, $oOffspringBeta->{"aBits"});
 			## Mutate
-			$oSelf->mutate(\$oOffspringAlpha{"aBits"});
-			$oSelf->mutate(\$oOffspringBeta{"aBits"});
+			$oSelf->mutate($oOffspringAlpha->{"aBits"});
+			$oSelf->mutate($oOffspringBeta->{"aBits"});
 			## Add the offspring to the new population
-			push(@aOffspring, %oOffspringAlpha);
-			push(@aOffspring, %oOffspringBeta);
+			push(@aOffspring, $oOffspringAlpha);
+			push(@aOffspring, $oOffspringBeta);
 			## Increment the count
 			$iNewOffspring += 2;
 		}
 		## Set the new population into the system
-		$oSelf->{"mGenomes"}     = @aOffspring;
+		@mGenomes                = @aOffspring;
 		## Increment the generation
 		$oSelf->{"mGeneration"} += 1;
 	}
@@ -149,6 +153,13 @@ package GeneticAlgorithm;
 		$oSelf->createPopulation();
 		## Tell everyone we are busy
 		$oSelf->{"mBusy"} = 1;
+		## Run the endless (ish) loop
+		while ($oSelf->{"mBusy"} == 1) {
+			## Epoch
+			$oSelf->epoch();
+		}
+		## Return instance
+		return $oSelf;
 	}
 	sub mutate {
 		## Grab the instance and bits
@@ -157,8 +168,14 @@ package GeneticAlgorithm;
 		for (my($iBit) = 0; $iBit < scalar(@aBits); $iBit ++) {
 			## Determine if the bit should be flipped
 			if ($oSelf->randomFloat() < $oSelf->{"mMutationRate"}) {
-				## Flip the bit
-				$aBits[$iBit] = !$aBits[$iBit];
+				## Check the bit
+				if ($aBits[$iBit] == 1) {
+					## Flip the bit
+					$aBits[$iBit] = 0;
+				} else {
+					## Flip the bit
+					$aBits[$iBit] = 1;
+				}
 			}
 		}
 	}
@@ -174,7 +191,7 @@ package GeneticAlgorithm;
 		## Loop through the population
 		for (my($iGenome) = 0; $iGenome < $oSelf->{"mPopulationSize"}; $iGenome ++) {
 			## Set the total fitnes
-			$iTotal += @{$oSelf->{"mGenomes"}}[$iGenome]->{"iFitness"};
+			$iTotal += $mGenomes[$iGenome]->{"iFitness"};
 			## Is this the genome we are looking for
 			if ($iTotal > $iSlice) {
 				## Set the selected genome
@@ -184,69 +201,70 @@ package GeneticAlgorithm;
 			}
 		}
 		## Return the selected genome
-		return @{$oSelf->{"mGenomes"}}[$iSelectedGenome];
-	}
-	sub render {
-		## Grab the instance
-		my($oSelf) = shift;
-		## Dump this instance
-		print Dumper($oSelf);
+		return $mGenomes[$iSelectedGenome];
 	}
 	sub updateFitnessScores {
 		## Grab the instance
-		my($oSelf) = shift;
+		my($oSelf)                     = shift;
 		## Reset the globals
 		$oSelf->{"mFittestGenome"}     = 0;
 		$oSelf->{"mBestFitnessScore"}  = 0;
 		$oSelf->{"mTotalFitnessScore"} = 0;
 		## Setup a temporary brain
 		my($oTemporaryMemory)          = new GeneticAlgorithmMap();
+		## Genome incrementor
+		my($iGenome)                   = 0;
 		## Update the fitness scores and keep track of the fittest so far
-		for (my($iGenome) = 0; $iGenome < $oSelf->{"mPopulationSize"}; $iGenome ++) {
+		for my $oGenome (@mGenomes) {
+			## Set the bit set
+			my(@aBits)                      = $oGenome->{"aBits"};
 			## Grab the directions
-			my(@aDirections) = $oSelf->decode(\@{$oSelf->{"mGenomes"}}[$iGenome]->{"aBits"});
+			my(@aDirections)                = $oSelf->decode(@aBits);
 			## Decode each genome's chromosome into an array of directions
-			@{$oSelf->{"mGenomes"}}[$iGenome]->{"iFitness"} = $oSelf->{"mMap"}->testRoute(\@aDirections, \$oTemporaryMemory);
+			$oGenome->{"iFitness"}          = $oSelf->{"mMap"}->testRoute(@aDirections, $oTemporaryMemory);
 			## Update the total fitness score
-			$oSelf->{"mTotalFitnessScore"} += @{$oSelf->{"mGenomes"}}[$iGenome]->{"iFitness"};
+			$oSelf->{"mTotalFitnessScore"} += $oGenome->{"iFitness"};
 			## Is this the genome we are looking for
-			if (@{$oSelf->{"mGenomes"}}[$iGenome]->{"iFitness"} > $oSelf->{"mBestFitnessScore"}) {
+			if ($oGenome->{"iFitness"} > $oSelf->{"mBestFitnessScore"}) {
 				## Store it
-				$oSelf->{"mBestFitnessScore"} = @{$oSelf->{"mGenomes"}}[$iGenome]->{"iFitness"};
+				$oSelf->{"mBestFitnessScore"} = $oGenome->{"iFitness"};
 				## Set the fittest genome
 				$oSelf->{"mFittestGenome"}    = $iGenome;
 				## Update the memory with the temporary memory
 				$oSelf->{"mBrain"}            = $oTemporaryMemory;
 				## Has the solution been found
-				if (@{$oSelf->{"mGenomes"}}[$iGenome]->{"iFitness"} == 1) {
+				if ($oGenome->{"iFitness"} == 1) {
 					## A solution has been found, stop the algorithm
 					$oSelf->{"mBusy"} = 0;
 				}
 			}
 			## Reset the temporary memory
 			$oTemporaryMemory->resetMemory();
+			## Increment the genomes
+			$iGenome ++;
 		}
-
+		## Render the generation
+		$oSelf->{"mMap"}->renderClear()->renderGeneration($oSelf->{"mGeneration"});
 	}
 	 #########################################################################
 	### Utilities #############################################################
 	 #########################################################################
 	sub binaryToInteger {
 		## Grab the instance and binary array
-		my($oSelf, @aBinary) = @_;
+		my($oSelf, $aBinary) = @_;
 		## Set the default value
 		my($iValue)          = 0;
 		## Set the multiplier
-		my($iMultiplier)     = 1;
+		my($iMultiplier)     = int 1;
 		## Loop through the bits
-		for (my($iBit) = scalar(@aBinary); $iBit > 0; $iBit --) {
+		for (my($iBit) = scalar(@{$aBinary}); $iBit > 0; $iBit --) {
 			## Set the new value
-			$iValue += ($aBinary[($iBit - 1)] * $iMultiplier);
+			$iValue += (@{$aBinary}[($iBit - 1)] * int $iMultiplier);
 			## Set the new multiplier
-			$iMultiplier *= 2;
+			$iMultiplier = int($iMultiplier * 2);
 		}
 		## Return the value
-		return $iValue;
+		return int($iValue);
 	}
 	sub decode {
 		## Grab the instance and encoded bits
@@ -254,16 +272,16 @@ package GeneticAlgorithm;
 		## Create a directions placeholder
 		my(@aDirections);
 		## Loop through the genes
-		for (my($iGene) = 0; $iGene < scalar(@aEncodedBits); $iGene ++) {
+		for (my($iGene) = 0; $iGene < scalar(@aEncodedBits); $iGene += $oSelf->{"mGeneLength"}) {
 			## Current gene placeholder
 			my(@aCurrentGene);
 			## Loop through the gene's bits
 			for (my($iBit) = 0; $iBit < $oSelf->{"mGeneLength"}; $iBit ++) {
 				## Add the bit
-				push(@aCurrentGene, $aEncodedBits[($iGene + $iBit)]);
+				push(@aCurrentGene, @aEncodedBits[($iGene + $iBit)]);
 			}
 			## Decode the bit
-			push(@aDirections, $oSelf->binaryToInteger(\@aCurrentGene));
+			push(@aDirections, $oSelf->binaryToInteger(@aCurrentGene));
 		}
 		## Return the directions
 		return @aDirections;
@@ -301,22 +319,41 @@ package GeneticAlgorithm;
 	 #########################################################################
 	### Getters ###############################################################
 	 #########################################################################
+	sub getFittest {
+		## Grab the instance
+		my($oSelf) = shift;
+		## Return the fittes genome
+		return $oSelf->{"mFittestGenome"};
+	}
+	sub getGeneration {
+		## Grab the instance
+		my($oSelf) = shift;
+		## Return the generation
+		return $oSelf->{"mGeneration"};
+	}
 	sub getGenome {
-		## Grab the instance and number of bits
-		my($oSelf, $iNumberOfBits) = @_;
-		## Setup the Genome
-		my($oGenome)               = {
-			aBits    => [], 
+		## Grab the instance
+		my($oSelf)   = shift;
+		## Setup the Genome attributes
+		my(@aBits);
+		## Loop to the number of bits
+		for (my($iBit) = 0; $iBit < $oSelf->{"mChromosomeLength"}; $iBit ++) {
+			## Push the bit
+			push(@aBits, $oSelf->randomInteger(0, 2));
+		}
+		## Define the genome
+		my($oGenome) = {
+			aBits    => \@aBits, 
 			iFitness => 0
 		};
-		## Loop to the number of bits
-		for (my($iBit) = 0; $iBit < $iNumberOfBits; $iBit ++) {
-			## Push the bit
-			push(@{$oGenome->{"aBits"}}, $oSelf->randomInteger(0, 2));
-		}
 		## Return the genome
 		return $oGenome;
-
+	}
+	sub getStarted {
+		## Grab the instance
+		my($oSelf) = shift;
+		## Return the busy boolean
+		return $oSelf->{"mBusy"};
 	}
 ## All is well, terminate
 1;

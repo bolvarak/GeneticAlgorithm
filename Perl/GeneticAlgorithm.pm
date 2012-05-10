@@ -3,7 +3,6 @@
 package GeneticAlgorithm;
 	## Use our map package
 	use GeneticAlgorithmMap;
-	use Data::Dumper;
 	## Use strict syntax
 	use strict;
 	## Use warnings

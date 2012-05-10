@@ -3,8 +3,6 @@
 use strict;
 ## Use warnings
 use warnings;
-## Use our debugger
-use Data::Dumper;
 ## Use our genetic algorithm
 use GeneticAlgorithm;
 ## Use our genetic algorithm map

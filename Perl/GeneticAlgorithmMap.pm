@@ -5,8 +5,6 @@ package GeneticAlgorithmMap;
 	use strict;
 	## Use warnings
 	use warnings;
-	## Use our debugger
-	use Data::Dumper;
 	## Define our constants
 	use constant {
 		END_X      => 0, 

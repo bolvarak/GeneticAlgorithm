@@ -242,8 +242,8 @@ package GeneticAlgorithm;
 			$oTemporaryMemory->resetMemory();
 			## Render the map
 			## $oSelf->{"mMap"}->render();
-			## Clear previous renders
-			$oSelf->{"mMap"}->renderClear();
+			## Clear the line
+			$oSelf->{"mMap"}->renderClearLine();
 			## Render the generation
 			$oSelf->{"mMap"}->renderGeneration($oSelf->{"mGeneration"});
 			## Increment the genomes

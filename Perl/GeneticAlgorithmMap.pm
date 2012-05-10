@@ -228,6 +228,14 @@ package GeneticAlgorithmMap;
 		## Return instance
 		return $oSelf;
 	}
+	sub renderClearLine {
+		## Grab the instance
+		my($oSelf) = shift;
+		## Render the clear line
+		print "\e[K\r";
+		## Return instance
+		return $oSelf;
+	}
 	sub renderEntry {
 		## Grab the instance
 		my($oSelf) = shift;

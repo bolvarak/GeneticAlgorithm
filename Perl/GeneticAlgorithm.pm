@@ -58,7 +58,7 @@ package GeneticAlgorithm;
 		## Set the instance
 		$oInstance ||= bless($oSelf, $sClass);
 		## Create an initial population
-		$oInstance->createPopulation();
+		## $oInstance->createPopulation(); ## Not needed if you use $oSelf->execute()
 		## Return the instance
 		return $oInstance;
 	}

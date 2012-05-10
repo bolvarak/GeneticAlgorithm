@@ -69,7 +69,7 @@ package GeneticAlgorithm;
 		## Grab the instance
 		my($oSelf) = shift;
 		## Clear the current population
-		@mGenomes = ();
+		undef(@mGenomes);
 		## Loop through the population
 		for (my($iGenome) = 0; $iGenome < int($oSelf->{"mPopulationSize"}); $iGenome ++) {
 			## Encode and add the genome

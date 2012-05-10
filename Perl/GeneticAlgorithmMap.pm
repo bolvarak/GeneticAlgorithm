@@ -164,7 +164,7 @@ package GeneticAlgorithmMap;
 	}
 	sub testRoute {
 		## Grab the instance, path and temporary memory
-		my($oSelf, @aDirections, $oMap) = @_;
+		my($oSelf, @aDirections, $oMap, $iGeneration, $bRender) = @_;
 		## Define the positions
 		my($iPositionX) = $oSelf->{"mStartX"};
 		my($iPositionY) = $oSelf->{"mStartY"};
@@ -214,6 +214,16 @@ package GeneticAlgorithmMap;
 		## Assign a fitness score proportional to the organism's distance from the exit
 		my($iDifferenceX) = abs($iPositionX - $oSelf->{"mEndX"});
 		my($iDifferenceY) = abs($iPositionY - $oSelf->{"mEndY"});
+		## Do we need to render
+		if ($bRender) {
+			## Render the map
+			$oSelf->render();
+		}
+		## Do we need to render the generation count
+		if ($iGeneration) {
+			## Render the generation counter
+			$oSelf->renderGeneration();
+		}
 		## Run the algorithm
 		return (1 / ($iDifferenceX + $iDifferenceY + 1));
 	}
@@ -234,7 +244,7 @@ package GeneticAlgorithmMap;
 		## Grab the instance
 		my($oSelf) = shift;
 		## Render the entrance
-		print "|";
+		print "\e[45;33m|\e[0m";
 		## Return instance
 		return $oSelf;
 	}
@@ -242,7 +252,7 @@ package GeneticAlgorithmMap;
 		## Grab the instance and generation
 		my($oSelf, $iGeneration) = @_;
 		## Print the generation
-		print ("Generation: ", $iGeneration, "\n\n");
+		print ("Generation: ", int $iGeneration);
 		## Return instance
 		return $oSelf;
 	}
@@ -250,7 +260,7 @@ package GeneticAlgorithmMap;
 		## Grab the instance
 		my($oSelf) = shift;
 		## Render the empy space
-		print " ";
+		print "\e[1;45m \e[0m";
 		## Return instance
 		return $oSelf;
 	}
@@ -266,7 +276,7 @@ package GeneticAlgorithmMap;
 		## Grab the instance
 		my($oSelf) = shift;
 		## Render the step
-		print "=";
+		print "\e[45;33m=\e[0m";
 		## Return instance
 		return $oSelf;
 	}
@@ -274,7 +284,7 @@ package GeneticAlgorithmMap;
 		## Grab the instance
 		my($oSelf) = shift;
 		## Render the wall
-		print "+";
+		print "\e[45;32m+\e[0m";
 		## Return instance
 		return $oSelf;
 	}

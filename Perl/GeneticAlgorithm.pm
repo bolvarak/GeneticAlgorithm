@@ -10,11 +10,11 @@ package GeneticAlgorithm;
 	use warnings;
 	## Define our constants
 	use constant {
-		CHROMOSOME_LENGTH => 140,    ## The length of each chromosome
+		CHROMOSOME_LENGTH => 70,    ## The length of each chromosome
 		CROSSOVER_RATE    => 0.7,   ## The rate at which genes crossover
-		GENE_LENGTH       => 4,     ## The length of each gene
+		GENE_LENGTH       => 2,     ## The length of each gene
 		MUTATION_RATE     => 0.001, ## The rate of mutation
-		POPULATION_SIZE   => 280    ## The size of each population
+		POPULATION_SIZE   => 140    ## The size of each population
 	};
 	## Instance placeholder
 	my($oInstance);

@@ -152,11 +152,6 @@ package GeneticAlgorithm;
 		$oSelf->createPopulation();
 		## Tell everyone we are busy
 		$oSelf->{"mBusy"} = 1;
-		## Run the endless (ish) loop
-		while ($oSelf->{"mBusy"} == 1) {
-			## Epoch
-			$oSelf->epoch();
-		}
 		## Return instance
 		return $oSelf;
 	}
@@ -239,8 +234,6 @@ package GeneticAlgorithm;
 			}
 			## Reset the temporary memory
 			$oTemporaryMemory->resetMemory();
-			## Render the map
-			## $oSelf->{"mMap"}->render();
 			## Clear the line
 			$oSelf->{"mMap"}->renderClearLine();
 			## Render the generation

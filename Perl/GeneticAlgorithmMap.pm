@@ -1,10 +1,13 @@
 #!/usr/bin/perl -w
 ## Define the package name
 package GeneticAlgorithmMap;
+	use Data::Dumper;
 	## Use strict syntax
 	use strict;
 	## Use warnings
 	use warnings;
+	## Use the POSIX library
+	use POSIX;
 	## Define our constants
 	use constant {
 		END_X      => 0, 
@@ -62,7 +65,7 @@ package GeneticAlgorithmMap;
 			mStartY    => shift || (START_Y), 
 			mEndX      => shift || (END_X), 
 			mEndY      => shift || (END_Y), 
-			mMemory    => undef
+			mMemory    => {}
 		};
 		## Set the instance
 		$oInstance ||= bless($oSelf, $sClass);
@@ -94,7 +97,9 @@ package GeneticAlgorithmMap;
 				$iRow ++;
 			}
 			## Add the coordinate
-			$oSelf->{"mMap"}->{$iRow}{$iColumn} = $aNewMap[$iCoordinate];
+			$oSelf->{"mMap"}->{$iRow}->{$iColumn}    = $aNewMap[$iCoordinate];
+			## Set the memory block
+			$oSelf->{"mMemory"}->{$iRow}->{$iColumn} = int 0;
 			## Increment the column
 			$iColumn ++;
 		}
@@ -104,31 +109,29 @@ package GeneticAlgorithmMap;
 	sub render {
 		## Grab the instance and generation
 		my($oSelf) = @_;
-		## Clear the current render
-		$oSelf->renderClear();
 		## Loop through the Y-Axis
 		for (my($iCoordinateY) = 0; $iCoordinateY < $oSelf->{"mMapHeight"}; $iCoordinateY ++) {
 			## Loop through the X-Axis
 			for (my($iCoordinateX) = 0; $iCoordinateX < $oSelf->{"mMapWidth"}; $iCoordinateX ++) {
 				## Determine the type of block
-				if ($oSelf->{"mMap"}->{$iCoordinateY}->{$iCoordinateX} eq 1) {      ## Wall
+				if ($oSelf->{"mMap"}->{$iCoordinateY}->{$iCoordinateX} == 1) {      ## Wall
 					## Render a wall cell
 					$oSelf->renderWall();
-				} elsif ($oSelf->{"mMap"}->{$iCoordinateY}->{$iCoordinateX} eq 5) { ## Entrance
+				} elsif ($oSelf->{"mMap"}->{$iCoordinateY}->{$iCoordinateX} == 5) { ## Entrance
 					## Render the entry point
 					$oSelf->renderEntry();
-				} elsif ($oSelf->{"mMap"}->{$iCoordinateY}->{$iCoordinateX} eq 8) { ## Exit
+				} elsif ($oSelf->{"mMap"}->{$iCoordinateY}->{$iCoordinateX} == 8) { ## Exit
 					## Render the entry point
 					$oSelf->renderEntry();
 				} else {                                                            ## Empty Space/Step
 					## Check for a step
-					if ($oSelf->{"mMemory"}->{$iCoordinateY} and $oSelf->{"mMemory"}->{$iCoordinateY}->{$iCoordinateX} and ($oSelf->{"mMemory"}->{$iCoordinateY}->{$iCoordinateX} eq 1)) {
-							## Render the step
-							$oSelf->renderStep();
-						} else {
-							## Render the empty space
-							$oSelf->renderNull();
-						}
+					if ($oSelf->{"mMemory"}->{$iCoordinateY}->{$iCoordinateX} and ($oSelf->{"mMemory"}->{$iCoordinateY}->{$iCoordinateX} == 1)) {
+						## Render the step
+						$oSelf->renderStep();
+					} else {
+						## Render the empty space
+						$oSelf->renderNull();
+					}
 				}
 			}
 			## Render a new line
@@ -159,46 +162,45 @@ package GeneticAlgorithmMap;
 		return $oSelf;
 	}
 	sub testRoute {
-		## Grab the instance, path and temporary memory
-		my($oSelf, @aDirections, $oMap) = @_;
+		## Grab the instance and path
+		my($oSelf, @aDirections) = @_;
+		## Setup the temporary memory
+		my($oMap)                = new GeneticAlgorithmMap();
 		## Define the positions
-		my($iPositionX) = $oSelf->{"mStartX"};
-		my($iPositionY) = $oSelf->{"mStartY"};
+		my($iPositionX)          = $oSelf->{"mStartX"};
+		my($iPositionY)          = $oSelf->{"mStartY"};
 		## Loop through the directions
 		for (my($iDirection) = 0; $iDirection < scalar(@aDirections); $iDirection ++) {
+			print Dumper floor($aDirections[$iDirection]);
 			## Determine the direction
-			if ($aDirections[$iDirection] == 0) {      ## North
+			if (($aDirections[$iDirection] >= 0) and ($aDirections[$iDirection]) < 1) {      ## North
 				## Check the boundaries
 				if ((($iPositionY - 1) < 0) or ($oSelf->{"mMap"}->{($iPositionY - 1)}->{$iPositionX} == 1)) {
-					## Move along, nothing to see here
-					next;
+					## Nothing to see here, move along
 				} else {
 					## Decrease the Y-Axis
 					$iPositionY -= 1;
 				}
-			} elsif ($aDirections[$iDirection] == 1) { ## South
+			} elsif (($aDirections[$iDirection] >= 1) and ($aDirections[$iDirection] < 2)) { ## South
 				## Check the boundaries
 				if ((($iPositionY + 1) >= $oSelf->{"mMapHeight"}) or ($oSelf->{"mMap"}->{($iPositionY + 1)}->{$iPositionX}) == 1) {
-					## Move along, nothing to see here
-					next;
+					## Nothing to see here, move along
 				} else {
 					## Increment the Y-Axis
 					$iPositionY += 1;
 				}
-			} elsif ($aDirections[$iDirection] == 2) { ## East
+			} elsif (($aDirections[$iDirection] >= 2) and ($aDirections[$iDirection] < 3)) { ## East
 				## Check the boundaries
 				if ((($iPositionX + 1) >= $oSelf->{"mMapWidth"}) or ($oSelf->{"mMap"}->{$iPositionY}->{($iPositionX + 1)} == 1)) {
-					## Move along, nothing to see here
-					next;
+					## Nothing to see here, move along
 				} else {
 					## Increment the X-Axis
 					$iPositionX += 1;
 				}
-			} elsif ($aDirections[$iDirection] == 3) { ## West
+			} elsif (($aDirections[$iDirection] >= 3) and ($aDirections[$iDirection]) < 4) { ## West
 				## Check the boundaries
 				if ((($iPositionX - 1) > 0) or ($oSelf->{"mMap"}->{$iPositionY}->{($iPositionX - 1)} == 1)) {
-					## Move along, nothing to see here
-					next;
+					## Nothing to see here, move along
 				} else {
 					## Decrease the X-Axis
 					$iPositionX -= 1;
@@ -208,10 +210,13 @@ package GeneticAlgorithmMap;
 			$oMap->{"mMemory"}->{$iPositionY}->{$iPositionX} = 1;
 		}
 		## Assign a fitness score proportional to the organism's distance from the exit
-		my($iDifferenceX) = abs($iPositionX - $oSelf->{"mEndX"});
-		my($iDifferenceY) = abs($iPositionY - $oSelf->{"mEndY"});
+		my($iDifferenceX) = int abs($iPositionX - $oSelf->{"mEndX"});
+		my($iDifferenceY) = int abs($iPositionY - $oSelf->{"mEndY"});
 		## Run the algorithm
-		return (1 / ($iDifferenceX + $iDifferenceY + 1));
+		return {
+			iDifference => (1 / ($iDifferenceX + $iDifferenceY + 1)), 
+			oMap        => $oMap
+		};
 	}
 	 #########################################################################
 	### Utilities #############################################################
@@ -246,7 +251,7 @@ package GeneticAlgorithmMap;
 		## Grab the instance and generation
 		my($oSelf, $iGeneration) = @_;
 		## Print the generation
-		print ("Generation: ", $iGeneration);
+		print ("Generation: ", $iGeneration, "\n");
 		## Return instance
 		return $oSelf;
 	}

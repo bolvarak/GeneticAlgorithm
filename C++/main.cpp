@@ -25,9 +25,9 @@ int main () {
 			// Render a clean line
 			cout << "----------------------------------------------------------------------------------" << endl;
 			// Render the Generation count
-			cout << "Generations:  " << cGeneticAlgorithm->Generation() << endl;
+			cout << "Generations:\t" << cGeneticAlgorithm->Generation() << endl;
 			// Render the fittest genome
-			cout << "Fittest Genome:  " << cGeneticAlgorithm->GetFittest() << endl;
+			cout << "Fittest Genome:\t" << cGeneticAlgorithm->GetFittest() << endl;
 			// Render a clean line
 			cout << "----------------------------------------------------------------------------------" << endl;
 			// Set the done boolean

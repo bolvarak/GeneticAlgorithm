@@ -24,29 +24,27 @@ const int GeneticAlgorithmMap::mStartY    = 7;
 const int GeneticAlgorithmMap::mEndX      = 0;
 const int GeneticAlgorithmMap::mEndY      = 2;
 // Render method
-void GeneticAlgorithmMap::Render() {
-	// Clear the current buffer
-	RenderClearBuffer();
+void GeneticAlgorithmMap::Render(int &iGeneration) {
 	// Loop through the y-axis
 	for (int iCoordinateY = 0; iCoordinateY < mMapHeight; ++iCoordinateY) {
 		// Loop through the x-axis
 		for (int iCoordinateX = 0; iCoordinateX < mMapWidth; ++iCoordinateX) {
-			if (iMap[iCoordinateY][iCoordinateX] == 1) {         // Is this a wall
+			if (iMap[iCoordinateY][iCoordinateX] == 1) {           // Is this a wall
 				// Render a wall
 				RenderWall();
-			} else if (iMap[iCoordinateY][iCoordinateX] == 5) {  // Is this an exit
+			} else if (iMap[iCoordinateY][iCoordinateX] == 5) {    // Is this an exit
 				// Render entry point
 				RenderEntryPoint();
-			} else if  (iMap[iCoordinateY][iCoordinateX] == 8) { // Is this an entrance
+			} else if  (iMap[iCoordinateY][iCoordinateX] == 8) {   // Is this an entrance
 				// Render entry point
 				RenderEntryPoint();
-			} else {
+			} else {                                               // Empty spaces and steps
 				// Check for a step
-				if (iMemory[iCoordinateY] && iMemory[iCoordinateY][iCoordinateX] && (iMemory[iCoordinateY][iCoordinateX] == 1)) {
+				if (iMemory[iCoordinateY][iCoordinateX] == 1) {    // Step
 					// Render the step
 					RenderStep();
-				} else {
-					// Render empty space
+				} else {                                           // Empty space
+					// Render the empty space
 					RenderNull();
 				}
 			}
@@ -56,13 +54,15 @@ void GeneticAlgorithmMap::Render() {
 	}
 	// Render another new line
 	RenderNewLine();
+	// Clear buffer line
+	RenderClearBufferLine();
 	// Render the generation
-	RenderGenerationToScreen(mGeneration);
+	RenderGenerationToScreen(iGeneration);
 }
 // Render only the generation
-void GeneticAlgorithmMap::RenderGeneration() {
+void GeneticAlgorithmMap::RenderGeneration(int &iGeneration) {
 	// Render the generation
-	RenderGenerationToScreen(mGeneration);
+	RenderGenerationToScreen(iGeneration);
 }
 // Reset Memory Method
 void GeneticAlgorithmMap::ResetMemory() {
@@ -76,9 +76,7 @@ void GeneticAlgorithmMap::ResetMemory() {
 	}
 }
 // Test Route Method
-double GeneticAlgorithmMap::TestRoute(const vector<int> &vPath, GeneticAlgorithmMap &cMemory, int &iGeneration) {
-	// Set the generation
-	mGeneration    = iGeneration;
+double GeneticAlgorithmMap::TestRoute(const vector<int> &vPath, GeneticAlgorithmMap &cMemory) {
 	// Define the positions
 	int iPositionX = mStartX;
 	int iPositionY = mStartY;

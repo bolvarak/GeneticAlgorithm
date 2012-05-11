@@ -173,7 +173,7 @@ void GeneticAlgorithm::UpdateFitnessScores() {
 		// Setup a directions placeholder
 		vector<int> vDirections = Decode(mGenomes[iGenome].vBits);
 		// Decode each genomes chromosome into a vector or directions
-		mGenomes[iGenome].dFitness = mMap.TestRoute(vDirections, cTemporaryMemory, mGeneration);
+		mGenomes[iGenome].dFitness = mMap.TestRoute(vDirections, cTemporaryMemory);
 		// Update the total
 		mTotalFitnessScore += mGenomes[iGenome].dFitness;
 		// Check to see if this genome is the fittest thus far
@@ -192,7 +192,7 @@ void GeneticAlgorithm::UpdateFitnessScores() {
 		}
 		// Reset the temporary brain
 		cTemporaryMemory.ResetMemory();
-		// Render the map
-		// mMap.Render();
 	}
+	// Render the map
+	mBrain.Render(mGeneration);
 }

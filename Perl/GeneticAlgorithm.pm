@@ -1,12 +1,15 @@
 #!/usr/bin/perl -w
 ## Define our package name
 package GeneticAlgorithm;
+	use Data::Dumper;
 	## Use our map package
 	use GeneticAlgorithmMap;
 	## Use strict syntax
 	use strict;
 	## Use warnings
 	use warnings;
+	## Use the POSIX library
+	use POSIX;
 	## Define our constants
 	use constant {
 		CHROMOSOME_LENGTH => 70,    ## The length of each chromosome
@@ -52,7 +55,7 @@ package GeneticAlgorithm;
 			mFittestGenome     => undef, 
 			mBestFitnessScore  => undef,
 			mMap               => new GeneticAlgorithmMap(), 
-			mBrain             => new GeneticAlgorithmMap(), 
+			mBrain             => undef, 
 			mGeneration        => undef
 		};
 		## Set the instance
@@ -99,13 +102,13 @@ package GeneticAlgorithm;
 		## Set the crossover point
 		my($iCrossoverPoint)                                               = $oSelf->randomInteger(0, ($oSelf->{"mChromosomeLength"} - 1));
 		## Swap the bits
-		for (my($iGenome) = 0; $iGenome < $iCrossoverPoint; $iGenome ++) {
+		for (my($iGenome) = 0; $iGenome < $iCrossoverPoint; ++$iGenome) {
 			## Add an alpha offspring
 			push(@aOffspringAlphpa, $aMother[$iGenome]);
 			## Add a beta offspring
 			push(@aOffspringBeta, $aFather[$iGenome]);
 		}
-		for (my($iGenome) = $iCrossoverPoint; $iGenome < scalar(@aMother); $iGenome ++) {
+		for (my($iGenome) = $iCrossoverPoint; $iGenome < scalar(@aMother); ++$iGenome) {
 			## Add an alpha genome
 			push(@aOffspringAlphpa, $aFather[$iGenome]);
 			## Add a beta offspring
@@ -204,8 +207,6 @@ package GeneticAlgorithm;
 		$oSelf->{"mFittestGenome"}     = 0;
 		$oSelf->{"mBestFitnessScore"}  = 0;
 		$oSelf->{"mTotalFitnessScore"} = 0;
-		## Setup a temporary brain
-		my($oTemporaryMemory)          = new GeneticAlgorithmMap();
 		## Genome incrementor
 		my($iGenome)                   = 0;
 		## Update the fitness scores and keep track of the fittest so far
@@ -214,8 +215,10 @@ package GeneticAlgorithm;
 			my(@aBits)                      = $oGenome->{"aBits"};
 			## Grab the directions
 			my(@aDirections)                = $oSelf->decode(@aBits);
+			## Grab the fitness and brain
+			my($oData)                      = $oSelf->{"mMap"}->testRoute(@aDirections);
 			## Decode each genome's chromosome into an array of directions
-			$oGenome->{"iFitness"}          = $oSelf->{"mMap"}->testRoute(@aDirections, $oTemporaryMemory);
+			$oGenome->{"iFitness"}          = $oData->{"iDifference"};
 			## Update the total fitness score
 			$oSelf->{"mTotalFitnessScore"} += $oGenome->{"iFitness"};
 			## Is this the genome we are looking for
@@ -225,22 +228,20 @@ package GeneticAlgorithm;
 				## Set the fittest genome
 				$oSelf->{"mFittestGenome"}    = $iGenome;
 				## Update the memory with the temporary memory
-				$oSelf->{"mBrain"}            = $oTemporaryMemory;
+				$oSelf->{"mBrain"}            = $oData->{"oMap"};
 				## Has the solution been found
 				if ($oGenome->{"iFitness"} == 1) {
 					## A solution has been found, stop the algorithm
 					$oSelf->{"mBusy"} = 0;
 				}
 			}
-			## Reset the temporary memory
-			$oTemporaryMemory->resetMemory();
-			## Clear the line
-			$oSelf->{"mMap"}->renderClearLine();
-			## Render the generation
-			$oSelf->{"mMap"}->renderGeneration($oSelf->{"mGeneration"});
 			## Increment the genomes
 			$iGenome ++;
 		}
+		## Clear the line
+		$oSelf->{"mBrain"}->render();
+		## Render the generation
+		$oSelf->{"mBrain"}->renderGeneration($oSelf->{"mGeneration"});
 	}
 	 #########################################################################
 	### Utilities #############################################################
@@ -249,18 +250,18 @@ package GeneticAlgorithm;
 		## Grab the instance and binary array
 		my($oSelf, $aBinary) = @_;
 		## Set the default value
-		my($iValue)          = 0;
+		my($iValue)          = int 0;
 		## Set the multiplier
-		my($iMultiplier)     = int 1;
+		my($iMultiplier)     = 1;
 		## Loop through the bits
 		for (my($iBit) = scalar(@{$aBinary}); $iBit > 0; $iBit --) {
 			## Set the new value
-			$iValue += (@{$aBinary}[($iBit - 1)] * int $iMultiplier);
+			$iValue     += floor(@{$aBinary}[($iBit - 1)] * $iMultiplier);
 			## Set the new multiplier
-			$iMultiplier = int($iMultiplier * 2);
+			$iMultiplier = floor($iMultiplier * 2);
 		}
 		## Return the value
-		return int($iValue);
+		return floor($iValue);
 	}
 	sub decode {
 		## Grab the instance and encoded bits
@@ -268,16 +269,16 @@ package GeneticAlgorithm;
 		## Create a directions placeholder
 		my(@aDirections);
 		## Loop through the genes
-		for (my($iGene) = 0; $iGene < scalar(@aEncodedBits); $iGene += $oSelf->{"mGeneLength"}) {
+		for (my($iGene) = 0; $iGene < scalar(@aEncodedBits); $iGene += int($oSelf->{"mGeneLength"})) {
 			## Current gene placeholder
 			my(@aCurrentGene);
 			## Loop through the gene's bits
-			for (my($iBit) = 0; $iBit < $oSelf->{"mGeneLength"}; $iBit ++) {
+			for (my($iBit) = 0; $iBit < $oSelf->{"mGeneLength"}; ++$iBit) {
 				## Add the bit
 				push(@aCurrentGene, @aEncodedBits[($iGene + $iBit)]);
 			}
 			## Decode the bit
-			push(@aDirections, $oSelf->binaryToInteger(@aCurrentGene));
+			push(@aDirections, floor(int $oSelf->binaryToInteger(@aCurrentGene)));
 		}
 		## Return the directions
 		return @aDirections;

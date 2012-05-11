@@ -21,26 +21,23 @@
 		// End points
 		static const int mEndX;
 		static const int mEndY;
-		             int mGeneration;
 	// Public Properties
 	public:
 		// Memory storage
 		int iMemory[MAP_HEIGHT][MAP_WIDTH];
 		// Constructor Definition
 		GeneticAlgorithmMap() {
-			// Set the generation
-			mGeneration = 0;
 			// Clear memory
 			ResetMemory();
 		}
 		// Displays the map
-		void Render();
+		void Render(int &iGeneration);
 		// Displays just the generation counter
-		void RenderGeneration();
+		void RenderGeneration(int &iGeneration);
 		// Clears memory
 		void ResetMemory();
 		// Tests the route to see how far the organism can get and returns
 		// a fitness score proportional to the distance reached from the exit
-		double TestRoute(const vector<int> &vPath, GeneticAlgorithmMap &cMemory, int &iGeneration);
+		double TestRoute(const vector<int> &vPath, GeneticAlgorithmMap &cMemory);
 	};
 #endif
